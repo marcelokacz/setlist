@@ -144,12 +144,6 @@
 		.board-footer { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 18px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; }
 		.save-state { display: flex; align-items: center; gap: 8px; }
 		.save-state::before { width: 6px; height: 6px; border-radius: 50%; background: #58a65e; content: ''; }
-		.save-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
-		.save-input, .saved-select { min-height: 32px; padding: 0 9px; border: 1px solid var(--line); border-radius: 3px; background: var(--panel); color: var(--ink); font: inherit; }
-		.save-input { width: 160px; }
-		.save-button, .load-button { min-height: 32px; padding: 0 11px; border: 1px solid var(--ink); border-radius: 3px; background: var(--ink); color: white; cursor: pointer; font: inherit; }
-		.load-button { background: transparent; color: var(--ink); }
-		.save-button:hover, .load-button:hover { background: var(--coral); border-color: var(--coral); color: white; }
 		.reset-button { padding: 0; border: 0; background: transparent; color: var(--ink); cursor: pointer; font: inherit; text-decoration: underline; text-underline-offset: 4px; }
 		.reset-button:hover { color: var(--coral); }
 
@@ -163,8 +157,6 @@
 			.set-block { min-height: 0; padding: 18px; }
 			.tile-list { min-height: 180px; }
 			.date-chip { display: none; }
-			.board-footer { align-items: flex-start; flex-direction: column; }
-			.save-tools { justify-content: flex-start; }
 		}
 	</style>
 </head>
@@ -208,20 +200,13 @@
 
 		<div class="board-footer">
 			<span class="save-state">Changes saved locally</span>
-			<div class="save-tools">
-				<input class="save-input" type="text" maxlength="80" placeholder="Setlist name" aria-label="Setlist name">
-				<button class="save-button" type="button">Save to repository</button>
-				<select class="saved-select" aria-label="Saved setlists"><option value="">Saved setlists</option></select>
-				<button class="load-button" type="button">Load</button>
-				<button class="reset-button" type="button">Reset board</button>
-			</div>
+			<button class="reset-button" type="button">Reset board</button>
 		</div>
 	</main>
 
 	<script>
 		const storageKey = 'setlist-board-v1';
 		const zones = [...document.querySelectorAll('.tile-list')];
-		const saveState = document.querySelector('.save-state');
 		let draggedTile = null;
 		let songs = [];
 
@@ -283,69 +268,6 @@
 			localStorage.setItem(storageKey, JSON.stringify(state));
 		}
 
-		function currentState() {
-			return zones.reduce((result, zone) => ({ ...result, [zone.dataset.zone]: [...zone.querySelectorAll('.tile')].map((tile) => tile.dataset.id) }), {});
-		}
-
-		function setSaveMessage(message, saved = false) {
-			saveState.textContent = message;
-			saveState.classList.toggle('repository-saved', saved);
-		}
-
-		function downloadSetlist(name, state) {
-			const blob = new Blob([JSON.stringify({ name, savedAt: new Date().toISOString(), ...state }, null, 2)], { type: 'application/json' });
-			const link = document.createElement('a');
-			link.href = URL.createObjectURL(blob);
-			link.download = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'setlist'}.json`;
-			link.click();
-			URL.revokeObjectURL(link.href);
-		}
-
-		async function loadSavedSetlists() {
-			const response = await fetch('/api/setlists');
-			if (!response.ok) throw new Error('Repository server unavailable');
-			const setlists = await response.json();
-			const select = document.querySelector('.saved-select');
-			select.replaceChildren(new Option('Saved setlists', ''));
-			setlists.forEach((setlist) => select.add(new Option(setlist.name, setlist.slug)));
-		}
-
-		async function saveSetlist() {
-			const input = document.querySelector('.save-input');
-			const name = input.value.trim();
-			if (!name) {
-				input.focus();
-				setSaveMessage('Enter a setlist name');
-				return;
-			}
-			const state = currentState();
-			const payload = { name, savedAt: new Date().toISOString(), ...state };
-			try {
-				const response = await fetch('/api/setlists', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-				if (!response.ok) throw new Error('Repository server unavailable');
-				await loadSavedSetlists();
-				setSaveMessage(`Saved to repository: ${name}`, true);
-			} catch (error) {
-				downloadSetlist(name, state);
-				setSaveMessage('Downloaded setlist JSON');
-			}
-		}
-
-		async function loadSetlist() {
-			const slug = document.querySelector('.saved-select').value;
-			if (!slug) return;
-			try {
-				const response = await fetch(`/api/setlists/${encodeURIComponent(slug)}`);
-				if (!response.ok) throw new Error('Could not load setlist');
-				const setlist = await response.json();
-				localStorage.setItem(storageKey, JSON.stringify({ in: setlist.in, out: setlist.out }));
-				renderSongs();
-				setSaveMessage(`Loaded from repository: ${setlist.name}`, true);
-			} catch (error) {
-				setSaveMessage(error.message);
-			}
-		}
-
 		document.addEventListener('dragstart', (event) => {
 			const tile = event.target.closest('.tile');
 			if (!tile) return;
@@ -370,11 +292,7 @@
 			zone.addEventListener('dragleave', (event) => { if (!zone.contains(event.relatedTarget)) zone.classList.remove('drag-over'); });
 			zone.addEventListener('drop', (event) => { event.preventDefault(); zone.classList.remove('drag-over'); });
 		});
-		document.querySelector('.save-button').addEventListener('click', saveSetlist);
-		document.querySelector('.load-button').addEventListener('click', loadSetlist);
-		document.querySelector('.save-input').addEventListener('keydown', (event) => { if (event.key === 'Enter') saveSetlist(); });
 		document.querySelector('.reset-button').addEventListener('click', () => { localStorage.removeItem(storageKey); window.location.reload(); });
-		loadSavedSetlists().catch(() => setSaveMessage('Ready to save locally'));
 
 		fetch('songs.json')
 			.then((response) => {
