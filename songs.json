@@ -1,0 +1,154 @@
+[
+  {
+    "id": "sandman",
+    "title": "Sandman",
+    "length": "05:08",
+    "bpm": 92,
+    "key": "D",
+    "inSetlist": true
+  },
+  {
+    "id": "not-my-fault",
+    "title": "Not my fault",
+    "length": "04:12",
+    "bpm": 118,
+    "key": "G",
+    "inSetlist": true
+  },
+  {
+    "id": "the-wake",
+    "title": "The Wake",
+    "length": "05:31",
+    "bpm": 84,
+    "key": "D",
+    "inSetlist": true
+  },
+  {
+    "id": "shoot-for-the-stars",
+    "title": "Shoot for the Stars",
+    "length": "04:18",
+    "bpm": 104,
+    "key": "D",
+    "inSetlist": false
+  },
+  {
+    "id": "no-brakes",
+    "title": "No brakes",
+    "length": "04:50",
+    "bpm": 110,
+    "key": "B",
+    "inSetlist": false
+  },
+  {
+    "id": "falling-to-the-sky",
+    "title": "Falling to the Sky",
+    "length": "05:10",
+    "bpm": 76,
+    "key": "F#",
+    "inSetlist": false
+  },
+  {
+    "id": "girl-in-pearls",
+    "title": "Girl in Pearls",
+    "length": "04:39",
+    "bpm": 76,
+    "key": "F#",
+    "inSetlist": false
+  },
+  {
+    "id": "dreamcatchers",
+    "title": "Dreamcatchers",
+    "length": "04:51",
+    "bpm": 120,
+    "key": "G",
+    "inSetlist": false
+  },
+  {
+    "id": "dreamerie",
+    "title": "Dreamerie",
+    "length": "06:37",
+    "bpm": 76,
+    "key": "F#",
+    "inSetlist": false
+  },
+  {
+    "id": "paralysis",
+    "title": "Paralysis",
+    "length": "04:09",
+    "bpm": 76,
+    "key": "F#",
+    "inSetlist": false
+  },
+  {
+    "id": "fireflies",
+    "title": "Fireflies",
+    "length": "05:35",
+    "bpm": 120,
+    "key": "G",
+    "inSetlist": false
+  },
+  {
+    "id": "we-will-stand",
+    "title": "We Will Stand",
+    "length": "05:01",
+    "bpm": 76,
+    "key": "F#",
+    "inSetlist": false
+  },
+  {
+    "id": "firesoul",
+    "title": "Firesoul",
+    "length": "05:02",
+    "bpm": 76,
+    "key": "F#",
+    "inSetlist": false
+  },
+  {
+    "id": "stargazers",
+    "title": "Stargazers",
+    "length": "05:22",
+    "bpm": 76,
+    "key": "F#",
+    "inSetlist": false
+  },
+  {
+    "id": "tupana",
+    "title": "Tupana",
+    "length": "03:29",
+    "bpm": 76,
+    "key": "F#",
+    "inSetlist": false
+  },
+  {
+    "id": "grain-of-sand",
+    "title": "Grain of Sand",
+    "length": "03:29",
+    "bpm": 76,
+    "key": "F#",
+    "inSetlist": false
+  },
+  {
+    "id": "the-storm",
+    "title": "The Storm",
+    "length": "05:11",
+    "bpm": 76,
+    "key": "F#",
+    "inSetlist": false
+  },
+  {
+    "id": "the-sound-of-time",
+    "title": "The Sound of Time",
+    "length": "05:45",
+    "bpm": 76,
+    "key": "F#",
+    "inSetlist": false
+  },
+  {
+    "id": "outro",
+    "title": "Outro",
+    "length": "01:00",
+    "bpm": 76,
+    "key": "F#",
+    "inSetlist": false
+  }
+]

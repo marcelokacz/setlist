@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Setlist / Home</title>
+	<style>
+		@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+		:root {
+			--ink: #182426;
+			--muted: #687473;
+			--paper: #f5f6f2;
+			--panel: #ffffff;
+			--line: #dce1dc;
+			--lime: #d8f267;
+			--coral: #ff765f;
+			--blue: #bfe4ff;
+			--shadow: 0 18px 45px rgba(24, 36, 38, 0.08);
+		}
+
+		* { box-sizing: border-box; }
+
+		body {
+			margin: 0;
+			min-width: 320px;
+			background: var(--paper);
+			color: var(--ink);
+			font-family: 'Space Grotesk', sans-serif;
+		}
+
+		body::before {
+			position: fixed;
+			inset: 0;
+			z-index: -1;
+			background: radial-gradient(circle at 88% 12%, rgba(216, 242, 103, 0.35), transparent 27%),
+				linear-gradient(135deg, rgba(255, 255, 255, 0.8), transparent 45%);
+			content: '';
+			pointer-events: none;
+		}
+
+		header {
+			display: flex;
+			align-items: flex-start;
+			justify-content: space-between;
+			gap: 24px;
+			max-width: 1240px;
+			margin: 0 auto;
+			padding: 48px 32px 30px;
+		}
+
+		.brand { display: flex; align-items: center; gap: 12px; }
+		.brand-mark {
+			display: grid;
+			width: 42px;
+			height: 42px;
+			place-items: center;
+			border: 2px solid var(--ink);
+			border-radius: 50%;
+			background: var(--lime);
+			font-family: 'DM Mono', monospace;
+			font-size: 16px;
+			font-weight: 500;
+		}
+		.brand-name { font-size: 17px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; }
+		.brand-subtitle { margin-top: 2px; color: var(--muted); font-size: 12px; }
+
+		.date-chip {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			color: var(--muted);
+			font-family: 'DM Mono', monospace;
+			font-size: 12px;
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
+		}
+		.date-chip strong { color: var(--ink); font-weight: 500; }
+		.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--coral); }
+
+		main { max-width: 1240px; margin: 0 auto; padding: 0 32px 70px; }
+
+		.intro {
+			display: flex;
+			align-items: end;
+			justify-content: space-between;
+			gap: 32px;
+			padding: 38px 0 42px;
+			border-top: 1px solid var(--line);
+		}
+		h1 { max-width: 630px; margin: 0; font-size: clamp(42px, 6vw, 82px); line-height: 0.94; letter-spacing: -0.05em; }
+		.intro-copy { max-width: 270px; margin: 0 0 5px; color: var(--muted); font-size: 15px; line-height: 1.5; }
+
+		.board {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 18px;
+		}
+
+		.set-block {
+			min-height: 430px;
+			padding: 24px;
+			border: 1px solid var(--line);
+			border-radius: 6px;
+			background: rgba(255, 255, 255, 0.74);
+			box-shadow: var(--shadow);
+		}
+		.set-block.out { background: rgba(232, 239, 233, 0.72); box-shadow: none; }
+		.block-header { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 22px; }
+		.block-title { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 19px; letter-spacing: -0.03em; }
+		.block-title::before { width: 10px; height: 10px; border-radius: 2px; background: var(--coral); content: ''; }
+		.out .block-title::before { background: var(--blue); }
+		.block-stats { display: flex; align-items: center; gap: 8px; }
+		.count { min-width: 30px; padding: 6px 8px; border-radius: 20px; background: var(--ink); color: white; font-family: 'DM Mono', monospace; font-size: 11px; text-align: center; }
+		.total-time { padding: 6px 8px; border: 1px solid var(--line); border-radius: 20px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; white-space: nowrap; }
+		.block-note { margin: 0 0 19px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+		.tile-list { display: grid; gap: 10px; min-height: 290px; align-content: start; padding: 3px; border: 1px dashed transparent; border-radius: 4px; transition: border-color 160ms, background 160ms; }
+		.tile-list.drag-over { border-color: var(--ink); background: rgba(216, 242, 103, 0.16); }
+		.tile {
+			display: grid;
+			grid-template-columns: 38px 1fr auto;
+			align-items: center;
+			gap: 14px;
+			min-height: 72px;
+			padding: 12px 14px 12px 12px;
+			border: 1px solid var(--line);
+			border-radius: 4px;
+			background: var(--panel);
+			cursor: grab;
+			user-select: none;
+			transition: transform 160ms, box-shadow 160ms, opacity 160ms;
+		}
+		.tile:hover { transform: translateY(-2px); box-shadow: 0 10px 18px rgba(24, 36, 38, 0.1); }
+		.tile.dragging { opacity: 0.35; transform: scale(0.98); }
+		.tile-number { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 3px; background: var(--lime); font-family: 'DM Mono', monospace; font-size: 12px; }
+		.out .tile-number { background: var(--blue); }
+		.tile-title { margin: 0 0 3px; font-size: 15px; font-weight: 600; }
+		.tile-meta { display: flex; flex-wrap: wrap; gap: 7px; margin: 0; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; }
+		.tile-meta span + span::before { margin-right: 7px; color: #b5bdb9; content: '/'; }
+		.drag-handle { color: #a1aaa7; font-size: 17px; letter-spacing: -4px; transform: rotate(90deg); }
+		.empty-state { padding: 60px 18px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; line-height: 1.6; text-align: center; }
+
+		.board-footer { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 18px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; }
+		.save-state { display: flex; align-items: center; gap: 8px; }
+		.save-state::before { width: 6px; height: 6px; border-radius: 50%; background: #58a65e; content: ''; }
+		.save-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; }
+		.save-input, .saved-select { min-height: 32px; padding: 0 9px; border: 1px solid var(--line); border-radius: 3px; background: var(--panel); color: var(--ink); font: inherit; }
+		.save-input { width: 160px; }
+		.save-button, .load-button { min-height: 32px; padding: 0 11px; border: 1px solid var(--ink); border-radius: 3px; background: var(--ink); color: white; cursor: pointer; font: inherit; }
+		.load-button { background: transparent; color: var(--ink); }
+		.save-button:hover, .load-button:hover { background: var(--coral); border-color: var(--coral); color: white; }
+		.reset-button { padding: 0; border: 0; background: transparent; color: var(--ink); cursor: pointer; font: inherit; text-decoration: underline; text-underline-offset: 4px; }
+		.reset-button:hover { color: var(--coral); }
+
+		@media (max-width: 760px) {
+			header { padding: 28px 18px 24px; }
+			main { padding: 0 18px 48px; }
+			.intro { display: block; padding: 28px 0 30px; }
+			h1 { font-size: clamp(48px, 15vw, 72px); }
+			.intro-copy { margin-top: 20px; }
+			.board { grid-template-columns: 1fr; }
+			.set-block { min-height: 0; padding: 18px; }
+			.tile-list { min-height: 180px; }
+			.date-chip { display: none; }
+			.board-footer { align-items: flex-start; flex-direction: column; }
+			.save-tools { justify-content: flex-start; }
+		}
+	</style>
+</head>
+<body>
+	<header>
+		<div class="brand">
+			<div class="brand-mark">S/</div>
+			<div>
+				<div class="brand-name">Setlist</div>
+				<div class="brand-subtitle">The running order, at a glance</div>
+			</div>
+		</div>
+		<div class="date-chip"><span class="status-dot"></span><strong>Live set</strong><span> / </span>22 SEP 2026</div>
+	</header>
+
+	<main>
+		<section class="intro">
+			<h1>Shape the<br><em>moment.</em></h1>
+			<p class="intro-copy">Move every song where it belongs. Your running order is saved automatically in this browser.</p>
+		</section>
+
+		<section class="board" aria-label="Setlist song board">
+			<article class="set-block">
+				<div class="block-header">
+					<h2 class="block-title">In the setlist</h2>
+					<div class="block-stats"><span class="count" data-count="in">03</span><span class="total-time" data-total-time="in">14:51</span></div>
+				</div>
+				<p class="block-note">Drag to reorder or move out</p>
+				<div class="tile-list" data-zone="in" aria-label="Songs in the setlist"></div>
+			</article>
+
+			<article class="set-block out">
+				<div class="block-header">
+					<h2 class="block-title">Out of the setlist</h2>
+					<span class="count" data-count="out">03</span>
+				</div>
+				<p class="block-note">Keep options here for later</p>
+				<div class="tile-list" data-zone="out" aria-label="Songs out of the setlist"></div>
+			</article>
+		</section>
+
+		<div class="board-footer">
+			<span class="save-state">Changes saved locally</span>
+			<div class="save-tools">
+				<input class="save-input" type="text" maxlength="80" placeholder="Setlist name" aria-label="Setlist name">
+				<button class="save-button" type="button">Save to repository</button>
+				<select class="saved-select" aria-label="Saved setlists"><option value="">Saved setlists</option></select>
+				<button class="load-button" type="button">Load</button>
+				<button class="reset-button" type="button">Reset board</button>
+			</div>
+		</div>
+	</main>
+
+	<script>
+		const storageKey = 'setlist-board-v1';
+		const zones = [...document.querySelectorAll('.tile-list')];
+		const saveState = document.querySelector('.save-state');
+		let draggedTile = null;
+		let songs = [];
+
+		function createTile(song) {
+			const tile = document.createElement('article');
+			tile.className = 'tile';
+			tile.draggable = true;
+			tile.dataset.id = song.id;
+			tile.innerHTML = `<span class="tile-number">--</span><div><h3 class="tile-title"></h3><p class="tile-meta"><span></span><span></span><span></span></p></div><span class="drag-handle">::</span>`;
+			tile.querySelector('.tile-title').textContent = song.title;
+			const metadata = tile.querySelectorAll('.tile-meta span');
+			metadata[0].textContent = song.length;
+			metadata[1].textContent = `${song.bpm} BPM`;
+			metadata[2].textContent = `KEY: ${song.key}`;
+			return tile;
+		}
+
+		function renderSongs() {
+			const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');
+			const songById = Object.fromEntries(songs.map((song) => [song.id, song]));
+			const savedIds = new Set(Object.values(saved || {}).flat());
+			const orderedSongs = [
+				...(saved?.in || []).map((id) => songById[id]).filter(Boolean),
+				...(saved?.out || []).map((id) => songById[id]).filter(Boolean),
+				...songs.filter((song) => !savedIds.has(song.id))
+			];
+			zones.forEach((zone) => { zone.replaceChildren(); });
+			orderedSongs.forEach((song) => {
+				const zoneName = saved?.in?.includes(song.id) ? 'in' : saved?.out?.includes(song.id) ? 'out' : song.inSetlist ? 'in' : 'out';
+				const zone = document.querySelector(`[data-zone="${zoneName}"]`);
+				zone.append(createTile(song));
+			});
+			updateBoard();
+		}
+
+		function updateBoard() {
+			const songById = Object.fromEntries(songs.map((song) => [song.id, song]));
+			zones.forEach((zone) => {
+				const tiles = [...zone.querySelectorAll('.tile')];
+				zone.querySelector('.empty-state')?.remove();
+				if (!tiles.length) {
+					const empty = document.createElement('div');
+					empty.className = 'empty-state';
+					empty.textContent = 'Drop a song here to add it.';
+					zone.append(empty);
+				}
+				tiles.forEach((tile, index) => {
+					tile.querySelector('.tile-number').textContent = zone.dataset.zone === 'in' ? String(index + 1).padStart(2, '0') : '--';
+				});
+				document.querySelector(`[data-count="${zone.dataset.zone}"]`).textContent = String(tiles.length).padStart(2, '0');
+			});
+			const totalSeconds = [...document.querySelector('[data-zone="in"]').querySelectorAll('.tile')].reduce((total, tile) => {
+				const [minutes, seconds] = (songById[tile.dataset.id]?.length || '00:00').split(':').map(Number);
+				return total + (minutes * 60) + seconds;
+			}, 0);
+			const totalMinutes = Math.floor(totalSeconds / 60);
+			document.querySelector('[data-total-time="in"]').textContent = `${String(totalMinutes).padStart(2, '0')}:${String(totalSeconds % 60).padStart(2, '0')}`;
+			const state = zones.reduce((result, zone) => ({ ...result, [zone.dataset.zone]: [...zone.querySelectorAll('.tile')].map((tile) => tile.dataset.id) }), {});
+			localStorage.setItem(storageKey, JSON.stringify(state));
+		}
+
+		function currentState() {
+			return zones.reduce((result, zone) => ({ ...result, [zone.dataset.zone]: [...zone.querySelectorAll('.tile')].map((tile) => tile.dataset.id) }), {});
+		}
+
+		function setSaveMessage(message, saved = false) {
+			saveState.textContent = message;
+			saveState.classList.toggle('repository-saved', saved);
+		}
+
+		function downloadSetlist(name, state) {
+			const blob = new Blob([JSON.stringify({ name, savedAt: new Date().toISOString(), ...state }, null, 2)], { type: 'application/json' });
+			const link = document.createElement('a');
+			link.href = URL.createObjectURL(blob);
+			link.download = `${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'setlist'}.json`;
+			link.click();
+			URL.revokeObjectURL(link.href);
+		}
+
+		async function loadSavedSetlists() {
+			const response = await fetch('/api/setlists');
+			if (!response.ok) throw new Error('Repository server unavailable');
+			const setlists = await response.json();
+			const select = document.querySelector('.saved-select');
+			select.replaceChildren(new Option('Saved setlists', ''));
+			setlists.forEach((setlist) => select.add(new Option(setlist.name, setlist.slug)));
+		}
+
+		async function saveSetlist() {
+			const input = document.querySelector('.save-input');
+			const name = input.value.trim();
+			if (!name) {
+				input.focus();
+				setSaveMessage('Enter a setlist name');
+				return;
+			}
+			const state = currentState();
+			const payload = { name, savedAt: new Date().toISOString(), ...state };
+			try {
+				const response = await fetch('/api/setlists', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+				if (!response.ok) throw new Error('Repository server unavailable');
+				await loadSavedSetlists();
+				setSaveMessage(`Saved to repository: ${name}`, true);
+			} catch (error) {
+				downloadSetlist(name, state);
+				setSaveMessage('Downloaded setlist JSON');
+			}
+		}
+
+		async function loadSetlist() {
+			const slug = document.querySelector('.saved-select').value;
+			if (!slug) return;
+			try {
+				const response = await fetch(`/api/setlists/${encodeURIComponent(slug)}`);
+				if (!response.ok) throw new Error('Could not load setlist');
+				const setlist = await response.json();
+				localStorage.setItem(storageKey, JSON.stringify({ in: setlist.in, out: setlist.out }));
+				renderSongs();
+				setSaveMessage(`Loaded from repository: ${setlist.name}`, true);
+			} catch (error) {
+				setSaveMessage(error.message);
+			}
+		}
+
+		document.addEventListener('dragstart', (event) => {
+			const tile = event.target.closest('.tile');
+			if (!tile) return;
+			draggedTile = tile;
+			tile.classList.add('dragging');
+			event.dataTransfer.effectAllowed = 'move';
+			event.dataTransfer.setData('text/plain', tile.dataset.id);
+		});
+		document.addEventListener('dragend', () => {
+			draggedTile?.classList.remove('dragging');
+			zones.forEach((zone) => zone.classList.remove('drag-over'));
+			draggedTile = null;
+			updateBoard();
+		});
+		zones.forEach((zone) => {
+			zone.addEventListener('dragover', (event) => {
+				event.preventDefault();
+				zone.classList.add('drag-over');
+				const afterTile = [...zone.querySelectorAll('.tile:not(.dragging)')].find((tile) => event.clientY < tile.getBoundingClientRect().top + tile.offsetHeight / 2);
+				if (draggedTile) zone.insertBefore(draggedTile, afterTile || null);
+			});
+			zone.addEventListener('dragleave', (event) => { if (!zone.contains(event.relatedTarget)) zone.classList.remove('drag-over'); });
+			zone.addEventListener('drop', (event) => { event.preventDefault(); zone.classList.remove('drag-over'); });
+		});
+		document.querySelector('.save-button').addEventListener('click', saveSetlist);
+		document.querySelector('.load-button').addEventListener('click', loadSetlist);
+		document.querySelector('.save-input').addEventListener('keydown', (event) => { if (event.key === 'Enter') saveSetlist(); });
+		document.querySelector('.reset-button').addEventListener('click', () => { localStorage.removeItem(storageKey); window.location.reload(); });
+		loadSavedSetlists().catch(() => setSaveMessage('Ready to save locally'));
+
+		fetch('songs.json')
+			.then((response) => {
+				if (!response.ok) throw new Error(`Could not load songs.json (${response.status})`);
+				return response.json();
+			})
+			.then((catalog) => {
+				songs = catalog;
+				renderSongs();
+			})
+			.catch((error) => {
+				zones.forEach((zone) => { zone.innerHTML = `<div class="empty-state">Song catalog unavailable.<br>${error.message}</div>`; });
+			});
+	</script>
+</body>
+</html>
