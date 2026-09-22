@@ -150,5 +150,29 @@
     "bpm": 76,
     "key": "F#",
     "inSetlist": false
+  },
+  {
+    "id": "note-vivs-guitar-switch",
+    "title": "Vivs + guitar switch",
+    "type": "note",
+    "inSetlist": false
+  },
+{
+    "id": "guitar-switch",
+    "title": "Guitar switch",
+    "type": "note",
+    "inSetlist": false
+  },
+  {
+    "id": "note-vivs",
+    "title": "Vivs",
+    "type": "note",
+    "inSetlist": false
+  },
+  {
+    "id": "note-flughafen",
+    "title": "Flughafen",
+    "type": "note",
+    "inSetlist": false
   }
 ]

@@ -10,11 +10,11 @@
 		:root {
 			--ink: #182426;
 			--muted: #687473;
-			--paper: #f5f6f2;
+			--paper: #f2f5f6;
 			--panel: #ffffff;
-			--line: #dce1dc;
-			--lime: #d8f267;
-			--coral: #ff765f;
+			--line: #c9daee;
+			--lime: #6788f2;
+			--coral: #383bf7;
 			--blue: #bfe4ff;
 			--shadow: 0 18px 45px rgba(24, 36, 38, 0.08);
 		}
@@ -33,7 +33,7 @@
 			position: fixed;
 			inset: 0;
 			z-index: -1;
-			background: radial-gradient(circle at 88% 12%, rgba(216, 242, 103, 0.35), transparent 27%),
+			background: radial-gradient(circle at 88% 12%, rgba(103, 152, 242, 0.35), transparent 27%),
 				linear-gradient(135deg, rgba(255, 255, 255, 0.8), transparent 45%);
 			content: '';
 			pointer-events: none;
@@ -135,6 +135,9 @@
 		.tile.dragging { opacity: 0.35; transform: scale(0.98); }
 		.tile-number { display: grid; width: 38px; height: 38px; place-items: center; border-radius: 3px; background: var(--lime); font-family: 'DM Mono', monospace; font-size: 12px; }
 		.out .tile-number { background: var(--blue); }
+		.tile.note { min-height: 52px; background: #fbfcf8; border-style: dashed; }
+		.tile.note .tile-number { width: 24px; height: 24px; background: transparent; color: var(--muted); font-size: 14px; }
+		.tile.note .tile-title { margin: 0; color: var(--muted); font-size: 13px; font-style: italic; font-weight: 500; }
 		.tile-title { margin: 0 0 3px; font-size: 15px; font-weight: 600; }
 		.tile-meta { display: flex; flex-wrap: wrap; gap: 7px; margin: 0; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; }
 		.tile-meta span + span::before { margin-right: 7px; color: #b5bdb9; content: '/'; }
@@ -144,8 +147,25 @@
 		.board-footer { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-top: 18px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 11px; }
 		.save-state { display: flex; align-items: center; gap: 8px; }
 		.save-state::before { width: 6px; height: 6px; border-radius: 50%; background: #58a65e; content: ''; }
+		.footer-actions { display: flex; align-items: center; gap: 20px; }
+		.download-button { padding: 10px 14px; border: 1px solid var(--ink); border-radius: 3px; background: var(--ink); color: white; cursor: pointer; font: inherit; }
+		.download-button:hover { background: var(--coral); border-color: var(--coral); }
 		.reset-button { padding: 0; border: 0; background: transparent; color: var(--ink); cursor: pointer; font: inherit; text-decoration: underline; text-underline-offset: 4px; }
 		.reset-button:hover { color: var(--coral); }
+		.show-dialog { width: min(420px, calc(100% - 36px)); padding: 0; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); color: var(--ink); box-shadow: 0 24px 80px rgba(24, 36, 38, 0.22); }
+		.show-dialog::backdrop { background: rgba(24, 36, 38, 0.42); }
+		.dialog-content { padding: 26px; }
+		.dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; margin-bottom: 24px; }
+		.dialog-title { margin: 0; font-size: 24px; letter-spacing: -0.04em; }
+		.dialog-copy { margin: 6px 0 0; color: var(--muted); font-size: 13px; line-height: 1.4; }
+		.close-dialog { padding: 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 22px; line-height: 1; }
+		.show-form { display: grid; gap: 17px; }
+		.show-form label { display: grid; gap: 7px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+		.show-form input { width: 100%; padding: 11px 12px; border: 1px solid var(--line); border-radius: 3px; background: var(--paper); color: var(--ink); font: 14px 'Space Grotesk', sans-serif; }
+		.show-form input:focus { outline: 2px solid var(--lime); outline-offset: 1px; }
+		.dialog-actions { display: flex; justify-content: flex-end; gap: 14px; margin-top: 8px; }
+		.cancel-button { padding: 10px 0; border: 0; background: transparent; color: var(--muted); cursor: pointer; font: inherit; }
+		.generate-button { padding: 10px 14px; border: 1px solid var(--ink); border-radius: 3px; background: var(--lime); color: var(--ink); cursor: pointer; font: inherit; font-weight: 600; }
 
 		@media (max-width: 760px) {
 			header { padding: 28px 18px 24px; }
@@ -157,6 +177,8 @@
 			.set-block { min-height: 0; padding: 18px; }
 			.tile-list { min-height: 180px; }
 			.date-chip { display: none; }
+			.board-footer { align-items: flex-start; flex-direction: column; }
+			.footer-actions { width: 100%; justify-content: space-between; }
 		}
 	</style>
 </head>
@@ -166,16 +188,16 @@
 			<div class="brand-mark">S/</div>
 			<div>
 				<div class="brand-name">Setlist</div>
-				<div class="brand-subtitle">The running order, at a glance</div>
+				<!-- <div class="brand-subtitle">The running order, at a glance</div> -->
 			</div>
 		</div>
-		<div class="date-chip"><span class="status-dot"></span><strong>Live set</strong><span> / </span>22 SEP 2026</div>
+		<!-- <div class="date-chip"><span class="status-dot"></span><strong>Live set</strong><span> / </span>22 SEP 2026</div> -->
 	</header>
 
 	<main>
 		<section class="intro">
-			<h1>Shape the<br><em>moment.</em></h1>
-			<p class="intro-copy">Move every song where it belongs. Your running order is saved automatically in this browser.</p>
+			<!-- <h1>FlowerLeaf</h1> -->
+			<!-- <p class="intro-copy">Move every song where it belongs. Your running order is saved automatically in this browser.</p> -->
 		</section>
 
 		<section class="board" aria-label="Setlist song board">
@@ -200,10 +222,28 @@
 
 		<div class="board-footer">
 			<span class="save-state">Changes saved locally</span>
-			<button class="reset-button" type="button">Reset board</button>
+			<div class="footer-actions">
+				<button class="download-button" type="button">Download PDF</button>
+				<button class="reset-button" type="button">Reset board</button>
+			</div>
 		</div>
 	</main>
 
+	<dialog class="show-dialog" aria-labelledby="dialog-title">
+		<div class="dialog-content">
+			<div class="dialog-header">
+				<div><h2 class="dialog-title" id="dialog-title">Show details</h2><p class="dialog-copy">Add the details that will appear on the PDF.</p></div>
+				<button class="close-dialog" type="button" aria-label="Close dialog">&times;</button>
+			</div>
+			<form class="show-form">
+				<label>Show date<input name="showDate" type="date" required></label>
+				<label>Location<input name="location" type="text" placeholder="Venue or city" required></label>
+				<div class="dialog-actions"><button class="cancel-button" type="button">Cancel</button><button class="generate-button" type="submit">Download PDF</button></div>
+			</form>
+		</div>
+	</dialog>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 	<script>
 		const storageKey = 'setlist-board-v1';
 		const zones = [...document.querySelectorAll('.tile-list')];
@@ -212,11 +252,14 @@
 
 		function createTile(song) {
 			const tile = document.createElement('article');
-			tile.className = 'tile';
+			tile.className = `tile${song.type === 'note' ? ' note' : ''}`;
 			tile.draggable = true;
 			tile.dataset.id = song.id;
-			tile.innerHTML = `<span class="tile-number">--</span><div><h3 class="tile-title"></h3><p class="tile-meta"><span></span><span></span><span></span></p></div><span class="drag-handle">::</span>`;
+			tile.innerHTML = song.type === 'note'
+				? `<span class="tile-number">↳</span><div><h3 class="tile-title"></h3></div><span class="drag-handle">::</span>`
+				: `<span class="tile-number">--</span><div><h3 class="tile-title"></h3><p class="tile-meta"><span></span><span></span><span></span></p></div><span class="drag-handle">::</span>`;
 			tile.querySelector('.tile-title').textContent = song.title;
+			if (song.type === 'note') return tile;
 			const metadata = tile.querySelectorAll('.tile-meta span');
 			metadata[0].textContent = song.length;
 			metadata[1].textContent = `${song.bpm} BPM`;
@@ -239,13 +282,34 @@
 				const zone = document.querySelector(`[data-zone="${zoneName}"]`);
 				zone.append(createTile(song));
 			});
+			ensureReusableNotes();
 			updateBoard();
+		}
+
+		function ensureReusableNotes() {
+			const outZone = document.querySelector('[data-zone="out"]');
+			songs.filter((song) => song.type === 'note').forEach((note) => {
+				const inTiles = [...document.querySelectorAll(`[data-zone="in"] [data-id="${note.id}"]`)];
+				const outTiles = [...outZone.querySelectorAll(`[data-id="${note.id}"]`)];
+				if (!outTiles.length) outZone.append(createTile(note));
+				outZone.querySelectorAll(`[data-id="${note.id}"]`).forEach((tile, index) => {
+					if (index > 0) tile.remove();
+				});
+				inTiles.slice(1).forEach((tile) => tile.remove());
+			});
+		}
+
+		function syncDropZoneHeights() {
+			zones.forEach((zone) => { zone.style.height = ''; });
+			const sharedHeight = Math.max(...zones.map((zone) => zone.scrollHeight));
+			zones.forEach((zone) => { zone.style.height = `${sharedHeight}px`; });
 		}
 
 		function updateBoard() {
 			const songById = Object.fromEntries(songs.map((song) => [song.id, song]));
 			zones.forEach((zone) => {
 				const tiles = [...zone.querySelectorAll('.tile')];
+				const songTiles = tiles.filter((tile) => !tile.classList.contains('note'));
 				zone.querySelector('.empty-state')?.remove();
 				if (!tiles.length) {
 					const empty = document.createElement('div');
@@ -253,12 +317,15 @@
 					empty.textContent = 'Drop a song here to add it.';
 					zone.append(empty);
 				}
-				tiles.forEach((tile, index) => {
-					tile.querySelector('.tile-number').textContent = zone.dataset.zone === 'in' ? String(index + 1).padStart(2, '0') : '--';
+				let songNumber = 0;
+				tiles.forEach((tile) => {
+					const isNote = tile.classList.contains('note');
+					if (!isNote && zone.dataset.zone === 'in') songNumber += 1;
+					tile.querySelector('.tile-number').textContent = isNote ? '↳' : zone.dataset.zone === 'in' ? String(songNumber).padStart(2, '0') : '--';
 				});
-				document.querySelector(`[data-count="${zone.dataset.zone}"]`).textContent = String(tiles.length).padStart(2, '0');
+				document.querySelector(`[data-count="${zone.dataset.zone}"]`).textContent = String(songTiles.length).padStart(2, '0');
 			});
-			const totalSeconds = [...document.querySelector('[data-zone="in"]').querySelectorAll('.tile')].reduce((total, tile) => {
+			const totalSeconds = [...document.querySelector('[data-zone="in"]').querySelectorAll('.tile:not(.note)')].reduce((total, tile) => {
 				const [minutes, seconds] = (songById[tile.dataset.id]?.length || '00:00').split(':').map(Number);
 				return total + (minutes * 60) + seconds;
 			}, 0);
@@ -266,6 +333,7 @@
 			document.querySelector('[data-total-time="in"]').textContent = `${String(totalMinutes).padStart(2, '0')}:${String(totalSeconds % 60).padStart(2, '0')}`;
 			const state = zones.reduce((result, zone) => ({ ...result, [zone.dataset.zone]: [...zone.querySelectorAll('.tile')].map((tile) => tile.dataset.id) }), {});
 			localStorage.setItem(storageKey, JSON.stringify(state));
+			syncDropZoneHeights();
 		}
 
 		document.addEventListener('dragstart', (event) => {
@@ -280,6 +348,7 @@
 			draggedTile?.classList.remove('dragging');
 			zones.forEach((zone) => zone.classList.remove('drag-over'));
 			draggedTile = null;
+			ensureReusableNotes();
 			updateBoard();
 		});
 		zones.forEach((zone) => {
@@ -293,6 +362,91 @@
 			zone.addEventListener('drop', (event) => { event.preventDefault(); zone.classList.remove('drag-over'); });
 		});
 		document.querySelector('.reset-button').addEventListener('click', () => { localStorage.removeItem(storageKey); window.location.reload(); });
+		window.addEventListener('resize', syncDropZoneHeights);
+
+		const showDialog = document.querySelector('.show-dialog');
+		const showForm = document.querySelector('.show-form');
+		document.querySelector('.download-button').addEventListener('click', () => showDialog.showModal());
+		document.querySelector('.close-dialog').addEventListener('click', () => showDialog.close());
+		document.querySelector('.cancel-button').addEventListener('click', () => showDialog.close());
+		showDialog.addEventListener('click', (event) => { if (event.target === showDialog) showDialog.close(); });
+
+		showForm.addEventListener('submit', async (event) => {
+			event.preventDefault();
+			const formData = new FormData(showForm);
+			const showDate = formData.get('showDate');
+			const location = formData.get('location').trim();
+			if (!showDate || !location) return;
+			const { jsPDF } = window.jspdf;
+			const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+			const logoImage = new Image();
+			logoImage.src = 'FlowerLeaf%20Band%20Logo%20Black.png';
+			await new Promise((resolve, reject) => { logoImage.onload = resolve; logoImage.onerror = reject; });
+			const sourceCanvas = document.createElement('canvas');
+			sourceCanvas.width = logoImage.naturalWidth;
+			sourceCanvas.height = logoImage.naturalHeight;
+			const sourceContext = sourceCanvas.getContext('2d');
+			sourceContext.drawImage(logoImage, 0, 0);
+			const pixels = sourceContext.getImageData(0, 0, sourceCanvas.width, sourceCanvas.height).data;
+			let left = sourceCanvas.width;
+			let top = sourceCanvas.height;
+			let right = 0;
+			let bottom = 0;
+			for (let y = 0; y < sourceCanvas.height; y += 1) {
+				for (let x = 0; x < sourceCanvas.width; x += 1) {
+					if (pixels[(y * sourceCanvas.width + x) * 4 + 3] > 0) {
+						left = Math.min(left, x);
+						top = Math.min(top, y);
+						right = Math.max(right, x + 1);
+						bottom = Math.max(bottom, y + 1);
+					}
+				}
+			}
+			const logoCanvas = document.createElement('canvas');
+			logoCanvas.width = right - left;
+			logoCanvas.height = bottom - top;
+			logoCanvas.getContext('2d').drawImage(sourceCanvas, left, top, logoCanvas.width, logoCanvas.height, 0, 0, logoCanvas.width, logoCanvas.height);
+			const logoPng = logoCanvas.toDataURL('image/png');
+			const songsById = Object.fromEntries(songs.map((song) => [song.id, song]));
+			const setlistSongs = [...document.querySelector('[data-zone="in"]').querySelectorAll('.tile')].map((tile) => songsById[tile.dataset.id]).filter(Boolean);
+			const [year, month, day] = showDate.split('-');
+			const formattedDate = `${day}.${month}.${year.slice(-2)}`;
+			const pageWidth = doc.internal.pageSize.getWidth();
+			const pageHeight = doc.internal.pageSize.getHeight();
+			const logoWidth = 70;
+			const logoHeight = logoWidth * logoCanvas.height / logoCanvas.width;
+			const headerTextY = 8 + logoHeight + 5;
+			const firstSongY = headerTextY + 18;
+			const addHeader = () => {
+				doc.addImage(logoPng, 'PNG', pageWidth / 2 - logoWidth / 2, 8, logoWidth, logoHeight);
+				doc.setFont('arial', 'normal');
+				doc.setFontSize(14);
+				doc.setTextColor(0, 0, 0);
+				doc.text(`${location} ${formattedDate}`, pageWidth / 2, headerTextY, { align: 'center' });
+			};
+			addHeader();
+			let y = firstSongY;
+			let songNumber = 0;
+			setlistSongs.forEach((song) => {
+				if (y > pageHeight - 34) { doc.addPage(); addHeader(); y = firstSongY; }
+				if (song.type === 'note') {
+					doc.setFont('helvetica', 'normal');
+					doc.setFontSize(33);
+					doc.setTextColor(0, 0, 0);
+					doc.text(`(${song.title.toUpperCase()})`, pageWidth / 2, y, { align: 'center' });
+					y += 14;
+					return;
+				}
+				songNumber += 1;
+				doc.setFont('helvetica', 'bold');
+				doc.setFontSize(33);
+				doc.setTextColor(0, 0, 0);
+				doc.text(`${songNumber}. ${song.title.toUpperCase()}`, pageWidth / 2, y, { align: 'center' });
+				y += 14;
+			});
+			doc.save(`setlist-${showDate}-${location.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')}.pdf`);
+			showDialog.close();
+		});
 
 		fetch('songs.json')
 			.then((response) => {
